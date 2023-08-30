@@ -1,0 +1,23 @@
+
+POST http://localhost:3000/videos
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary1234
+
+------WebKitFormBoundary1234
+Content-Disposition: form-data; name="title"
+
+Video 1
+------WebKitFormBoundary1234
+Content-Disposition: form-data; name="description"
+
+Description 1
+------WebKitFormBoundary1234
+Content-Disposition: form-data; name="category_id"
+
+1
+------WebKitFormBoundary1234
+Content-Disposition: form-data; name="file"; filename="video.mp4"
+Content-Type: video/mp4
+
+< ./cat.mp4
+------WebKitFormBoundary1234--
+
