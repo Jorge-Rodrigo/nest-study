@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
 import { PrismaService } from '../prisma/prisma/prisma.service';
 import { InvalidRelationError } from '../errors/invalid-relation.error';
+import { VideoFileValidator } from './video-file-validator';
 
 @Injectable()
 export class VideosService {
@@ -45,9 +46,44 @@ export class VideosService {
     });
   }
 
-  update(id: number, updateVideoDto: UpdateVideoDto) {
-    console.log(updateVideoDto);
-    return `This action updates a #${id} video`;
+  async update(
+    id: number,
+    updateVideoDto: UpdateVideoDto & { file: Express.Multer.File | undefined },
+  ) {
+    if (updateVideoDto.category_id) {
+      const categoryExists =
+        (await this.prismaService.category.count({
+          where: {
+            id: updateVideoDto.category_id,
+          },
+        })) != 0;
+      if (!categoryExists) {
+        throw new InvalidRelationError('Category not found!');
+      }
+    }
+    if (updateVideoDto.file) {
+      const videoFileValidator = new VideoFileValidator({
+        maxSize: 1024 * 1024 * 100,
+        mimetype: 'video/mp4',
+      });
+
+      if (!videoFileValidator.isValid(updateVideoDto.file)) {
+        throw new BadRequestException(
+          videoFileValidator.buildErrorMessage(updateVideoDto.file),
+        );
+      }
+    }
+    return this.prismaService.video.update({
+      data: {
+        title: updateVideoDto.title,
+        description: updateVideoDto.description,
+        category_id: updateVideoDto.category_id,
+        file_path: updateVideoDto.file?.path,
+      },
+      where: {
+        id,
+      },
+    });
   }
 
   remove(id: number) {

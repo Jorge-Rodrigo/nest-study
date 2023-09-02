@@ -10,6 +10,7 @@ import {
   ParseFilePipe,
   UseInterceptors,
   Res,
+  HttpCode,
 } from '@nestjs/common';
 import { VideosService } from './videos.service';
 import {
@@ -68,10 +69,17 @@ export class VideosController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateVideoDto: UpdateVideoDto) {
-    return this.videosService.update(+id, updateVideoDto);
+  @UseInterceptors(FileInterceptor('file'))
+  update(
+    @Param('id') id: string,
+    @Body() updateVideoDto: UpdateVideoDto,
+    @UploadedFile()
+    file: Express.Multer.File | undefined,
+  ) {
+    return this.videosService.update(+id, { ...updateVideoDto, file });
   }
 
+  @HttpCode(204)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.videosService.remove(+id);
