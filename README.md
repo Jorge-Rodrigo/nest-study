@@ -13,3 +13,5 @@ docker compose up
 e para rodar o projeto:
 yarn start
 
+<p>E para acessar a documentação:http://localhost:3000/api</p>
+
